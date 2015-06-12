@@ -361,6 +361,7 @@ namespace SS14.Shared.GameObjects
         public void ApplyEntityStates(List<EntityState> entityStates, float serverTime)
         {
             var entityKeys = new List<int>();
+            Dictionary<Entity, EntityState> unknownEntitysThatNeedToBeHandled = new Dictionary<Entity, EntityState>();
             foreach (EntityState es in entityStates)
             {
                 //Todo defer component state result processing until all entities are loaded and initialized...
@@ -374,9 +375,15 @@ namespace SS14.Shared.GameObjects
                 else //Unknown entities
                 {
                     Entity e = SpawnEntity(es.StateData.TemplateName, es.StateData.Uid);
-                    e.Name = es.StateData.Name;
-                    e.HandleEntityState(es);
+                    unknownEntitysThatNeedToBeHandled.Add(e, es);
+                    //e.Name = es.StateData.Name;
+                    //e.HandleEntityState(es);
                 }
+            }
+            foreach (KeyValuePair<Entity, EntityState> pair in unknownEntitysThatNeedToBeHandled)
+            {
+                pair.Key.Name = pair.Value.StateData.Name;
+                pair.Key.HandleEntityState(pair.Value);
             }
 
             //Delete entities that exist here but don't exist in the entity states
